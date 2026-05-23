@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AETHER RELAY — Launch Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="scanline"></div>
+
+  <header class="header">
+    <div class="header__left">
+      <span class="header__label">AETHER RELAY</span>
+      <span class="header__sub">LAUNCH MONITOR v1.0</span>
+    </div>
+    <div class="header__center">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="status-text" id="statusText">CONNECTING...</span>
+    </div>
+    <div class="header__right">
+      <span class="header__clock" id="clock">--:--:--</span>
+      <span class="header__date" id="date">---- -- --</span>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <section class="upcoming">
+      <div class="section-header">
+        <span class="section-title">UPCOMING LAUNCHES</span>
+        <span class="section-count" id="launchCount">-- MISSIONS</span>
+      </div>
+      <div class="launch-list" id="launchList">
+        <div class="launch-skeleton" aria-hidden="true"></div>
+        <div class="launch-skeleton" aria-hidden="true"></div>
+        <div class="launch-skeleton" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="next-launch-panel" id="nextLaunchPanel">
+        <div class="panel-label">NEXT LAUNCH</div>
+        <div class="next-name" id="nextName">—</div>
+        <div class="next-agency" id="nextAgency">—</div>
+        <div class="next-rocket" id="nextRocket">—</div>
+        <div class="next-pad" id="nextPad">—</div>
+        <div class="countdown-label">T−</div>
+        <div class="countdown" id="countdown">--:--:--</div>
+        <div class="next-status" id="nextStatus">—</div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="panel-label">SESSION</div>
+        <div class="stat-row">
+          <span class="stat-label">LAST UPDATE</span>
+          <span class="stat-value" id="lastUpdate">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">DATA SOURCE</span>
+          <span class="stat-value">THE SPACE DEVS</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">CACHE TTL</span>
+          <span class="stat-value">30 MIN</span>
+        </div>
+      </div>
+      <div class="weather-panel">
+  <div class="panel-label">SPACE WEATHER</div>
+
+  <div class="weather-kp">
+    <div class="weather-row">
+      <span class="weather-label">KP INDEX</span>
+      <span class="weather-value" id="kpValue">—</span>
+    </div>
+    <div class="kp-bar-track">
+      <div class="kp-bar-fill" id="kpBar"></div>
+    </div>
+    <div class="kp-level" id="kpLevel">—</div>
+  </div>
+
+  <div class="weather-row">
+    <span class="weather-label">SOLAR FLUX</span>
+    <span class="weather-value" id="xrayClass">—</span>
+  </div>
+  <div class="weather-row">
+    <span class="weather-label">WIND SPEED</span>
+    <span class="weather-value" id="windSpeed">— km/s</span>
+  </div>
+  <div class="weather-row">
+    <span class="weather-label">DENSITY</span>
+    <span class="weather-value" id="windDensity">— p/cm³</span>
+  </div>
+</div>
+    </aside>
+
+  </main>
+
+  <footer class="footer">
+  <span>AETHER RELAY © 2026</span>
+  <span>DATA BY <a href="https://rocketlaunch.live" target="_blank" class="footer-link">ROCKETLAUNCH.LIVE</a> & THE SPACE DEVS</span>
+  <span>STREAM READY</span>
+</footer>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

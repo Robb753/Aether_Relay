@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AETHER RELAY — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <header class="admin-header">
+    <div>
+      <span class="admin-title">AETHER RELAY</span>
+      <span class="admin-sub">MISSION CONTROL — ADMIN</span>
+    </div>
+    <div class="obs-status">
+      <div class="obs-dot" id="obsDot"></div>
+      <span id="obsLabel">OBS —</span>
+    </div>
+    <a href="/" class="back-link">← DASHBOARD</a>
+  </header>
+
+  <main class="admin-main">
+
+    <!-- SCHEDULER STATE -->
+    <section class="panel">
+      <div class="panel-title">SCHEDULER STATE</div>
+      <div class="state-grid">
+        <div class="state-item">
+          <span class="state-label">LAUNCH MODE</span>
+          <span class="state-value" id="stateLaunchMode">—</span>
+        </div>
+        <div class="state-item">
+          <span class="state-label">ACTIVE LAUNCH ID</span>
+          <span class="state-value" id="statelaunchId">—</span>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-danger" id="btnForceLaunch">⚡ FORCE LAUNCH MODE</button>
+        <button class="btn btn-ghost" id="btnForceReturn">↩ FORCE RETURN</button>
+      </div>
+    </section>
+
+    <!-- STREAM URLs -->
+    <section class="panel">
+      <div class="panel-title">UPCOMING LAUNCHES — STREAM URLs</div>
+      <div class="launch-admin-list" id="launchAdminList">
+        <div class="loading">Chargement...</div>
+      </div>
+    </section>
+
+    <!-- CUSTOM LAUNCHES -->
+    <section class="panel">
+      <div class="panel-title">CUSTOM LAUNCHES — ENTRÉE MANUELLE</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">NOM MISSION *</label>
+          <input class="url-input" id="cf-name" type="text" placeholder="Spectrum | Onward and Upward" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">AGENCE *</label>
+          <input class="url-input" id="cf-agency" type="text" placeholder="Isar Aerospace" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">LANCEUR</label>
+          <input class="url-input" id="cf-rocket" type="text" placeholder="Spectrum" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">PAD</label>
+          <input class="url-input" id="cf-pad" type="text" placeholder="Orbital Launch Pad, Andøya" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">DATE NET (UTC)</label>
+          <input class="url-input" id="cf-net" type="datetime-local" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">STATUT</label>
+          <select class="url-input" id="cf-status">
+            <option value="TBD">TBD</option>
+            <option value="Go">Go</option>
+            <option value="Hold">Hold</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ORBITE</label>
+          <input class="url-input" id="cf-orbit" type="text" placeholder="Sun-Synchronous Orbit" />
+        </div>
+      </div>
+
+      <div class="action-row" style="margin-top: 12px;">
+        <button class="btn btn-save" onclick="addCustomLaunch()">+ AJOUTER</button>
+      </div>
+
+      <div class="custom-list" id="customList"></div>
+    </section>
+
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
