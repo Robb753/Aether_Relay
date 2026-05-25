@@ -4,6 +4,10 @@ let obs = null;
 let connected = false;
 
 async function connect() {
+  if (process.env.OBS_DISABLED === "true") {
+    logger.info("OBS WebSocket désactivé sur ce serveur");
+    return;
+  }
   try {
     const { OBSWebSocket } = await import("obs-websocket-js");
     obs = new OBSWebSocket();
