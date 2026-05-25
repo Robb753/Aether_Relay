@@ -23,7 +23,6 @@ async function connect() {
   } catch (err) {
     connected = false;
     logger.warn(`OBS WebSocket non disponible : ${err.message}`);
-    console.error("OBS ERROR DETAILS:", err);
     setTimeout(connect, 15000);
   }
 }

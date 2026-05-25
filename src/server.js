@@ -6,6 +6,7 @@ const { fetchSpaceWeather } = require("./services/spaceweather");
 const scheduler = require("./services/scheduler");
 const store = require("./core/store");
 const logger = require("./core/logger");
+const cache = require("./core/cache");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -134,6 +135,7 @@ app.post("/api/admin/custom-launches", adminAuth, (req, res) => {
   store.addCustomLaunch(launch);
   logger.info(`Custom launch ajouté : ${name}`);
   res.json({ ok: true, launch });
+  cache.clear("launches");
 });
 
 app.delete("/api/admin/custom-launches/:id", adminAuth, (req, res) => {
@@ -143,6 +145,8 @@ app.delete("/api/admin/custom-launches/:id", adminAuth, (req, res) => {
     return res.status(404).json({ error: "Launch introuvable" });
   }
   store.deleteCustomLaunch(id);
+  cache.clear("launches");
+  logger.info(`Custom launch supprimé : ${id}`);
   res.json({ ok: true });
 });
 
