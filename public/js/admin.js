@@ -168,6 +168,7 @@ async function addCustomLaunch() {
   const netRaw = document.getElementById("cf-net").value;
   const status = document.getElementById("cf-status").value;
   const orbit = document.getElementById("cf-orbit").value.trim();
+  const streamUrl = document.getElementById("cf-stream-url").value.trim(); // ← NOUVEAU
 
   if (!name || !agency) {
     alert("Nom et agence requis");
@@ -191,6 +192,19 @@ async function addCustomLaunch() {
   });
 
   if (res.ok) {
+    const data = await res.json();
+
+    // ← NOUVEAU : sauvegarde l'URL stream si renseignée
+    if (streamUrl && data.launch?.id) {
+      const normalizedUrl = normalizeYouTubeUrl(streamUrl);
+      await fetch("/api/admin/stream-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ launchId: data.launch.id, url: normalizedUrl }),
+      });
+    }
+
+    // Reset form
     [
       "cf-name",
       "cf-agency",
@@ -198,6 +212,7 @@ async function addCustomLaunch() {
       "cf-pad",
       "cf-net",
       "cf-orbit",
+      "cf-stream-url",
     ].forEach((id) => {
       document.getElementById(id).value = "";
     });
