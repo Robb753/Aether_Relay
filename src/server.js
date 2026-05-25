@@ -78,9 +78,10 @@ app.get("/sse", (req, res) => {
 // ─── ADMIN — SCHEDULER ────────────────────────────────────────
 app.get("/api/admin/launches", adminAuth, async (req, res) => {
   const launches = await fetchLaunches();
+  const custom = store.getCustomLaunches();
   const urls = store.getAllStreamUrls();
   const state = scheduler.getState();
-  res.json({ launches, urls, state });
+  res.json({ launches: [...launches, ...custom], urls, state });
 });
 
 app.post("/api/admin/stream-url", adminAuth, (req, res) => {
