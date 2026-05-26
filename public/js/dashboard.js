@@ -1,6 +1,7 @@
 // ─── ÉTAT ────────────────────────────────────────────────────
 let launches = [];
 let countdownInterval = null;
+let globeReady = false;
 
 // ─── ÉLÉMENTS DOM ────────────────────────────────────────────
 const launchList = document.getElementById("launchList");
@@ -22,6 +23,11 @@ const kpLevel = document.getElementById("kpLevel");
 const xrayClass = document.getElementById("xrayClass");
 const windSpeed = document.getElementById("windSpeed");
 const windDensity = document.getElementById("windDensity");
+const issLat = document.getElementById("issLat");
+const issLon = document.getElementById("issLon");
+const issAlt = document.getElementById("issAlt");
+const viewA = document.getElementById("viewA");
+const viewB = document.getElementById("viewB");
 
 // ─── HORLOGE UTC ─────────────────────────────────────────────
 function tickClock() {
@@ -97,6 +103,59 @@ function renderWeather(data) {
   windDensity.textContent = `${data.windDensity} p/cm³`;
 }
 
+// ─── ISS ─────────────────────────────────────────────────────
+function renderISS(data) {
+  if (!data || data.latitude == null) return;
+
+  const lat = parseFloat(data.latitude).toFixed(2);
+  const lon = parseFloat(data.longitude).toFixed(2);
+
+  if (issLat) issLat.textContent = `${lat}° ${lat >= 0 ? "N" : "S"}`;
+  if (issLon) issLon.textContent = `${Math.abs(lon)}° ${lon >= 0 ? "E" : "W"}`;
+  if (issAlt) issAlt.textContent = `${data.altitude || 408} km`;
+
+  if (globeReady && window.issGlobe) {
+    window.issGlobe.updateISS(data);
+  }
+}
+
+// ─── ROTATION SIDEBAR ────────────────────────────────────────
+let currentView = "A";
+const VIEW_DURATION = 12000; // 12 secondes par vue
+
+function switchView() {
+  const from = currentView === "A" ? viewA : viewB;
+  const to = currentView === "A" ? viewB : viewA;
+
+  from.classList.add("fade-out");
+
+  setTimeout(() => {
+    from.classList.add("hidden");
+    from.classList.remove("fade-out");
+    to.classList.remove("hidden");
+    setTimeout(() => to.classList.add("fade-in"), 20);
+    setTimeout(() => to.classList.remove("fade-in"), 620);
+    currentView = currentView === "A" ? "B" : "A";
+
+    // Init globe au premier passage sur la vue B
+    if (currentView === "B" && !globeReady && window.issGlobe) {
+      window.issGlobe.init().then((v) => {
+        if (v) {
+          globeReady = true;
+          // Fetch TLE pour l'orbite
+          fetch("/api/iss/tle")
+            .then((r) => r.json())
+            .then((tle) => {
+              if (tle.line1) window.issGlobe.updateOrbit(tle);
+            });
+        }
+      });
+    }
+  }, 600);
+}
+
+setInterval(switchView, VIEW_DURATION);
+
 // ─── STATUT → CLASSE CSS ──────────────────────────────────────
 function statusClass(abbrev) {
   if (!abbrev) return "tbd";
@@ -150,11 +209,11 @@ function renderLaunches(data) {
 
   if (data.length === 0) {
     launchList.innerHTML = `
-    <div class="no-launches">
-      <span>NO UPCOMING LAUNCHES</span>
-      <span class="no-launches-sub">Next update in 30 min</span>
-    </div>
-  `;
+      <div class="no-launches">
+        <span>NO UPCOMING LAUNCHES</span>
+        <span class="no-launches-sub">Next update in 30 min</span>
+      </div>
+    `;
   } else {
     data.forEach((launch, i) => {
       launchList.appendChild(renderCard(launch, i));
@@ -179,19 +238,16 @@ function connectSSE() {
   setStatus("");
   const sse = new EventSource("/sse");
 
-  sse.onopen = () => {
-    setStatus("connected");
-  };
+  sse.onopen = () => setStatus("connected");
 
   sse.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
-      if (msg.type === "launches") {
-        renderLaunches(msg.payload);
-      }
-      // ← AJOUT ICI
-      if (msg.type === "spaceweather") {
-        renderWeather(msg.payload);
+      if (msg.type === "launches") renderLaunches(msg.payload);
+      if (msg.type === "spaceweather") renderWeather(msg.payload);
+      if (msg.type === "iss") renderISS(msg.payload);
+      if (msg.type === "tle" && window.issGlobe && globeReady) {
+        window.issGlobe.updateOrbit(msg.payload);
       }
     } catch (e) {
       console.error("SSE parse error:", e);
@@ -212,10 +268,13 @@ async function initialFetch() {
     const data = await res.json();
     if (data.length > 0) renderLaunches(data);
 
-    // ← AJOUT ICI
     const wRes = await fetch("/api/spaceweather");
     const wData = await wRes.json();
     renderWeather(wData);
+
+    const iRes = await fetch("/api/iss");
+    const iData = await iRes.json();
+    renderISS(iData);
   } catch (e) {
     console.error("Initial fetch failed:", e);
   }

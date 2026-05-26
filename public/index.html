@@ -7,6 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+
+  <!-- CesiumJS -->
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.117/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+
+  <!-- satellite.js pour SGP4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.1.4/satellite.min.js"></script>
+
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -16,7 +24,7 @@
   <header class="header">
     <div class="header__left">
       <span class="header__label">AETHER RELAY</span>
-      <span class="header__sub">LAUNCH MONITOR v1.0</span>
+      <span class="header__sub">LAUNCH MONITOR v1.1</span>
     </div>
     <div class="header__center">
       <div class="status-dot" id="statusDot"></div>
@@ -30,6 +38,7 @@
 
   <main class="main">
 
+    <!-- LISTE LAUNCHES -->
     <section class="upcoming">
       <div class="section-header">
         <span class="section-title">UPCOMING LAUNCHES</span>
@@ -42,7 +51,10 @@
       </div>
     </section>
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
+
+      <!-- NEXT LAUNCH — toujours visible -->
       <div class="next-launch-panel" id="nextLaunchPanel">
         <div class="panel-label">NEXT LAUNCH</div>
         <div class="next-name" id="nextName">—</div>
@@ -54,58 +66,87 @@
         <div class="next-status" id="nextStatus">—</div>
       </div>
 
-      <div class="stats-panel">
-        <div class="panel-label">SESSION</div>
-        <div class="stat-row">
-          <span class="stat-label">LAST UPDATE</span>
-          <span class="stat-value" id="lastUpdate">—</span>
+      <!-- VUE A : SESSION + SPACE WEATHER -->
+      <div class="sidebar-view" id="viewA">
+        <div class="stats-panel">
+          <div class="panel-label">SESSION</div>
+          <div class="stat-row">
+            <span class="stat-label">LAST UPDATE</span>
+            <span class="stat-value" id="lastUpdate">—</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">DATA SOURCE</span>
+            <span class="stat-value">THE SPACE DEVS</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">CACHE TTL</span>
+            <span class="stat-value">30 MIN</span>
+          </div>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">DATA SOURCE</span>
-          <span class="stat-value">THE SPACE DEVS</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">CACHE TTL</span>
-          <span class="stat-value">30 MIN</span>
+
+        <div class="weather-panel">
+          <div class="panel-label">SPACE WEATHER</div>
+          <div class="weather-kp">
+            <div class="weather-row">
+              <span class="weather-label">KP INDEX</span>
+              <span class="weather-value" id="kpValue">—</span>
+            </div>
+            <div class="kp-bar-track">
+              <div class="kp-bar-fill" id="kpBar"></div>
+            </div>
+            <div class="kp-level" id="kpLevel">—</div>
+          </div>
+          <div class="weather-row">
+            <span class="weather-label">SOLAR FLUX</span>
+            <span class="weather-value" id="xrayClass">—</span>
+          </div>
+          <div class="weather-row">
+            <span class="weather-label">WIND SPEED</span>
+            <span class="weather-value" id="windSpeed">— km/s</span>
+          </div>
+          <div class="weather-row">
+            <span class="weather-label">DENSITY</span>
+            <span class="weather-value" id="windDensity">— p/cm³</span>
+          </div>
         </div>
       </div>
-      <div class="weather-panel">
-  <div class="panel-label">SPACE WEATHER</div>
 
-  <div class="weather-kp">
-    <div class="weather-row">
-      <span class="weather-label">KP INDEX</span>
-      <span class="weather-value" id="kpValue">—</span>
-    </div>
-    <div class="kp-bar-track">
-      <div class="kp-bar-fill" id="kpBar"></div>
-    </div>
-    <div class="kp-level" id="kpLevel">—</div>
-  </div>
+      <!-- VUE B : GLOBE ISS -->
+      <div class="sidebar-view hidden" id="viewB">
+        <div class="iss-panel">
+          <div class="panel-label">ISS LIVE TRACK</div>
+          <div id="cesiumContainer"></div>
+          <div class="iss-info">
+            <div class="iss-row">
+              <span class="iss-label">LAT</span>
+              <span class="iss-value" id="issLat">—</span>
+            </div>
+            <div class="iss-row">
+              <span class="iss-label">LON</span>
+              <span class="iss-value" id="issLon">—</span>
+            </div>
+            <div class="iss-row">
+              <span class="iss-label">ALT</span>
+              <span class="iss-value" id="issAlt">408 km</span>
+            </div>
+            <div class="iss-row">
+              <span class="iss-label">SPD</span>
+              <span class="iss-value">27 600 km/h</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <div class="weather-row">
-    <span class="weather-label">SOLAR FLUX</span>
-    <span class="weather-value" id="xrayClass">—</span>
-  </div>
-  <div class="weather-row">
-    <span class="weather-label">WIND SPEED</span>
-    <span class="weather-value" id="windSpeed">— km/s</span>
-  </div>
-  <div class="weather-row">
-    <span class="weather-label">DENSITY</span>
-    <span class="weather-value" id="windDensity">— p/cm³</span>
-  </div>
-</div>
     </aside>
-
   </main>
 
   <footer class="footer">
-  <span>AETHER RELAY © 2026</span>
-  <span>DATA BY <a href="https://rocketlaunch.live" target="_blank" class="footer-link">ROCKETLAUNCH.LIVE</a> & THE SPACE DEVS</span>
-  <span>STREAM READY</span>
-</footer>
+    <span>AETHER RELAY © 2026</span>
+    <span>DATA BY <a href="https://rocketlaunch.live" target="_blank" class="footer-link">ROCKETLAUNCH.LIVE</a> & THE SPACE DEVS</span>
+    <span>STREAM READY</span>
+  </footer>
 
+  <script src="js/globe.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>

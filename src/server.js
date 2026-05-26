@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const { fetchLaunches } = require("./services/launches");
 const { fetchSpaceWeather } = require("./services/spaceweather");
+const { fetchISSPosition, fetchTLE } = require("./services/iss");
 const scheduler = require("./services/scheduler");
 const store = require("./core/store");
 const logger = require("./core/logger");
@@ -41,6 +42,13 @@ app.get("/admin", adminAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "../public/admin.html"));
 });
 
+// ─── API CONFIG (Cesium token) ────────────────────────────────
+app.get("/api/config", (req, res) => {
+  res.json({
+    cesiumToken: process.env.CESIUM_TOKEN || null,
+  });
+});
+
 // ─── API LAUNCHES ─────────────────────────────────────────────
 app.get("/api/launches", async (req, res) => {
   const launches = await fetchLaunches();
@@ -57,6 +65,17 @@ app.get("/api/launches", async (req, res) => {
 app.get("/api/spaceweather", async (req, res) => {
   const data = await fetchSpaceWeather();
   res.json(data);
+});
+
+// ─── API ISS ──────────────────────────────────────────────────
+app.get("/api/iss", async (req, res) => {
+  const position = await fetchISSPosition();
+  res.json(position || {});
+});
+
+app.get("/api/iss/tle", async (req, res) => {
+  const tle = await fetchTLE();
+  res.json(tle || {});
 });
 
 // ─── SSE ──────────────────────────────────────────────────────
@@ -134,9 +153,9 @@ app.post("/api/admin/custom-launches", adminAuth, (req, res) => {
     source: "custom",
   };
   store.addCustomLaunch(launch);
+  cache.clear("launches");
   logger.info(`Custom launch ajouté : ${name}`);
   res.json({ ok: true, launch });
-  cache.clear("launches");
 });
 
 app.delete("/api/admin/custom-launches/:id", adminAuth, (req, res) => {
@@ -159,7 +178,23 @@ function broadcast(data) {
   }
 }
 
-// ─── POLL ─────────────────────────────────────────────────────
+// ─── POLL ISS ─────────────────────────────────────────────────
+async function pollISS() {
+  const position = await fetchISSPosition();
+  if (position) {
+    broadcast({ type: "iss", payload: position });
+  }
+}
+
+// ─── POLL TLE ─────────────────────────────────────────────────
+async function pollTLE() {
+  const tle = await fetchTLE();
+  if (tle) {
+    broadcast({ type: "tle", payload: tle });
+  }
+}
+
+// ─── POLL LAUNCHES + WEATHER ──────────────────────────────────
 async function poll() {
   logger.info("Poll launches...");
   const launches = await fetchLaunches();
@@ -183,6 +218,11 @@ app.listen(PORT, async () => {
   logger.info(`Serveur démarré sur le port ${PORT}`);
   await connectOBS();
   await poll();
-  setInterval(poll, 30 * 60 * 1000);
+  await pollTLE();
+
+  setInterval(poll, 30 * 60 * 1000); // launches + weather toutes les 30 min
+  setInterval(pollISS, 5000); // ISS toutes les 5 secondes
+  setInterval(pollTLE, 60 * 60 * 1000); // TLE toutes les heures
+
   scheduler.start();
 });
